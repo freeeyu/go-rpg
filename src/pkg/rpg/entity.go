@@ -13,6 +13,7 @@ type Entity interface {
   IsDead() bool
 
   takeDamage(amount int)
+  maxHP() int
 }
 
 type Player struct {
@@ -21,24 +22,12 @@ type Player struct {
   hp int
 }
 
-func xpRequiredForLevel(level int) int {
-  // each level costs an additional XPMultiplier points
-  // when XPMultiplier is 10: 10, 30, 60, 100, 150
-  return XPMultiplier * level * (level + 1) / 2
-}
-
 func levelFromXP(xp int) int {
-  // level = sqrt(2 * xp / XPMultiplier + 0.25) - 0.5
-  return int(math.Trunc(math.Sqrt(2 * float64(xp) / XPMultiplier + 0.25) - 0.5)) + 1
-}
-
-func hpFromLevel(level int) int {
-  return level * 10
 }
 
 func NewPlayer(name string, xp int) *Player {
   player := &Player{name: name, xp: xp}
-  player.hp = hpFromLevel(player.Level())
+  player.hp = player.maxHP()
   return player
 }
 
@@ -51,7 +40,12 @@ func (p *Player) XP() int {
 }
 
 func (p *Player) Level() int {
-  return levelFromXP(p.xp)
+  // each level costs an additional XPMultiplier points
+  // when XPMultiplier is 10: 10, 30, 60, 100, 150
+  //
+  // xpRequiredForLevel = XPMultiplier * level * (level + 1) / 2
+  // level = sqrt(2 * xp / XPMultiplier + 0.25) - 0.5
+  return int(math.Trunc(math.Sqrt(2 * float64(p.xp) / XPMultiplier + 0.25) - 0.5)) + 1
 }
 
 func (p *Player) HP() int {
@@ -71,4 +65,8 @@ func (p *Player) IsDead() bool {
 
 func (p *Player) takeDamage(amount int) {
   p.hp -= amount
+}
+
+func (p *Player) maxHP() int {
+  return p.Level() * 10
 }

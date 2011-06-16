@@ -1,0 +1,5 @@
+go-rpg
+======
+
+go-rpg provides the 'rpg' go package, a package for creating role playing
+games.

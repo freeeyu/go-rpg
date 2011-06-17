@@ -22,9 +22,6 @@ type Player struct {
   hp int
 }
 
-func levelFromXP(xp int) int {
-}
-
 func NewPlayer(name string, xp int) *Player {
   player := &Player{name: name, xp: xp}
   player.hp = player.maxHP()

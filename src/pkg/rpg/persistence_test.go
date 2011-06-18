@@ -2,7 +2,6 @@ package rpg
 
 import (
   "testing"
-  "launchpad.net/gobson/bson"
   "launchpad.net/mgo"
   "os"
 )
@@ -20,7 +19,7 @@ func setup(t *testing.T) {
 }
 
 func teardown(t *testing.T) {
-  err = mdb.C("entities").RemoveAll(bson.M{})
+  err = mdb.C("players").RemoveAll(M{})
   msession.Close()
 }
 
@@ -29,7 +28,7 @@ func die(t *testing.T, args ...interface{}) {
   t.Fatal(args)
 }
 
-func TestStoreEntity(t *testing.T) {
+func TestStorePlayer(t *testing.T) {
   var db *MongoConn
   setup(t)
 
@@ -40,18 +39,46 @@ func TestStoreEntity(t *testing.T) {
   defer db.Close()
 
   player := NewPlayer("foo", 0)
-  err = db.StoreEntity(player)
+  err = db.StorePlayer(player)
   if err != nil {
     t.Error(err)
   }
 
-  var result bson.M
-  err = mdb.C("entities").Find(bson.M{"name": "foo"}).One(&result)
+  var result M
+  err = mdb.C("players").Find(M{"name": "foo"}).One(&result)
   if err != nil {
     t.Error(err)
   }
+  t.Log(result)
   if result["name"] != "foo" || result["xp"] != 0 || result["hp"] != 10 {
     t.Error("player values were not correct")
+  }
+
+  teardown(t)
+}
+
+func TestPlayers(t *testing.T) {
+  var db *MongoConn
+  var players []*Player
+  setup(t)
+
+  db, err = NewMongoConn("localhost", "go-rpg-test")
+  if err != nil {
+    die(t, err.String())
+  }
+  defer db.Close()
+
+  player := NewPlayer("foo", 0)
+  err = db.StorePlayer(player)
+  if err != nil {
+    t.Error(err)
+  }
+
+  players, err = db.Players()
+  if err != nil {
+    t.Error(err)
+  } else if len(players) != 1 {
+    t.Error("expected 1 player, found", len(players))
   }
 
   teardown(t)

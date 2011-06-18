@@ -1,13 +1,15 @@
 package rpg
 
 import (
-  "launchpad.net/gobson/bson"
   "launchpad.net/mgo"
   "os"
 )
 
+type M map[string]interface{}
+
 type Database interface {
-  StoreEntity(Entity) os.Error
+  StorePlayer(*Player) os.Error
+  Players(...M) ([]*Player, os.Error)
   Close()
 }
 
@@ -24,9 +26,29 @@ func NewMongoConn(host string, databaseName string) (*MongoConn, os.Error) {
   return &MongoConn{session, session.DB(databaseName)}, nil
 }
 
-func (m *MongoConn) StoreEntity(entity Entity) os.Error {
-  data := bson.M{"name": entity.Name(), "xp": entity.XP(), "hp": entity.HP()}
-  return m.db.C("entities").Insert(data)
+func (m *MongoConn) StorePlayer(player *Player) os.Error {
+  data := M{"name": player.Name(), "xp": player.XP(), "hp": player.HP()}
+  return m.db.C("players").Insert(data)
+}
+
+func (m *MongoConn) Players(args ...M) ([]*Player, os.Error) {
+  var result *Player
+  var err os.Error
+  var count int
+
+  qry := m.db.C("players")
+  count, err = qry.Count()   // FIXME: count is probably too expensive
+  if err != nil {
+    return nil, err
+  }
+
+  players := make([]*Player, count)
+  i := 0
+  err = qry.Find(M{}).For(&result, func() os.Error {
+    players[i] = result
+    return nil
+  })
+  return players, err
 }
 
 func (m *MongoConn) Close() {

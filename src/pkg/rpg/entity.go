@@ -17,6 +17,12 @@ type Entity interface {
   maxHP() int
 }
 
+type Player struct {
+  name string
+  xp int
+  hp int
+}
+
 func Unserialize(data M) Entity {
   var result Entity
   var kind string
@@ -44,16 +50,15 @@ func Unserialize(data M) Entity {
   return result
 }
 
-type Player struct {
-  name string
-  xp int
-  hp int
+
+func NewPlayer(name string) *Player {
+  player := &Player{name: name}
+  player.init()
+  return player
 }
 
-func NewPlayer(name string, xp int) *Player {
-  player := &Player{name: name, xp: xp}
-  player.hp = player.maxHP()
-  return player
+func (p *Player) init() {
+  p.hp = p.maxHP()
 }
 
 func (p *Player) Name() string {

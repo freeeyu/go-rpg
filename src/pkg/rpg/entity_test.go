@@ -2,13 +2,22 @@ package rpg
 
 import "testing"
 
-func newPlayerFromLevel(name string, level int) *Player {
-  xp := XPMultiplier * (level - 1) * (level) / 2
-  return NewPlayer(name, xp)
+func newPlayerWithLevel(name string, level int) *Player {
+  p := &Player{name: name}
+  p.xp = XPMultiplier * (level - 1) * (level) / 2
+  p.init()
+  return p
+}
+
+func newPlayerWithXP(name string, xp int) *Player {
+  p := &Player{name: name}
+  p.xp = xp
+  p.init()
+  return p
 }
 
 func TestNewPlayer(t *testing.T) {
-  player := NewPlayer("nooblet", 0)
+  player := NewPlayer("nooblet")
   if player.Name() != "nooblet" || player.XP() != 0 {
     t.Fail()
   }
@@ -17,17 +26,17 @@ func TestNewPlayer(t *testing.T) {
 func TestPlayerLevel(t *testing.T) {
   var player *Player
 
-  player = NewPlayer("nooblet", 0)
+  player = NewPlayer("nooblet")
   if player.Level() != 1 {
     t.Error("level should have been 1, but was ", player.Level())
   }
 
-  player = NewPlayer("nooblet", 10)
+  player = newPlayerWithXP("nooblet", 10)
   if player.Level() != 2 {
     t.Error("level should have been 2, but was ", player.Level())
   }
 
-  player = NewPlayer("nooblet", 35)
+  player = newPlayerWithXP("nooblet", 35)
   if player.Level() != 3 {
     t.Error("level should have been 3, but was ", player.Level())
   }
@@ -36,25 +45,25 @@ func TestPlayerLevel(t *testing.T) {
 func TestPlayerHP(t *testing.T) {
   var player *Player
 
-  player = newPlayerFromLevel("nooblet", 1)
+  player = newPlayerWithLevel("nooblet", 1)
   if player.HP() != 10 {
     t.Error("HP should have been 10, but was ", player.HP())
   }
 
-  player = newPlayerFromLevel("nooblet", 2)
+  player = newPlayerWithLevel("nooblet", 2)
   if player.HP() != 20 {
     t.Error("HP should have been 20, but was ", player.HP())
   }
 
-  player = newPlayerFromLevel("nooblet", 100)
+  player = newPlayerWithLevel("nooblet", 100)
   if player.HP() != 1000 {
     t.Error("HP should have been 1000, but was ", player.HP())
   }
 }
 
 func TestPlayerAttack(t *testing.T) {
-  p1 := newPlayerFromLevel("nooblet", 1)
-  p2 := newPlayerFromLevel("newbie", 2)
+  p1 := newPlayerWithLevel("nooblet", 1)
+  p2 := newPlayerWithLevel("newbie", 2)
 
   p1.Attack(p2)
   if p2.HP() != 18 {
@@ -68,8 +77,8 @@ func TestPlayerAttack(t *testing.T) {
 }
 
 func TestPlayerDeath(t *testing.T) {
-  p1 := newPlayerFromLevel("nooblet", 1)
-  p2 := newPlayerFromLevel("newbie", 2)
+  p1 := newPlayerWithLevel("nooblet", 1)
+  p2 := newPlayerWithLevel("newbie", 2)
 
   p2.Attack(p1)
   p2.Attack(p1)
@@ -81,8 +90,8 @@ func TestPlayerDeath(t *testing.T) {
 }
 
 func TestPlayerXPGaining(t *testing.T) {
-  p1 := newPlayerFromLevel("nooblet", 1)
-  p2 := newPlayerFromLevel("newbie", 2)
+  p1 := newPlayerWithLevel("nooblet", 1)
+  p2 := newPlayerWithLevel("newbie", 2)
 
   if p1.XP() != 0 {
     t.Error("p1 should have 0 XP to begin with, but had", p1.XP())
@@ -98,8 +107,8 @@ func TestPlayerXPGaining(t *testing.T) {
 }
 
 func TestPlayerLevelingUp(t *testing.T) {
-  p1 := NewPlayer("nooblet", 8)
-  p2 := newPlayerFromLevel("newbie", 2)
+  p1 := newPlayerWithXP("nooblet", 8)
+  p2 := newPlayerWithLevel("newbie", 2)
 
   for !p2.IsDead() {
     p1.Attack(p2)
@@ -115,7 +124,7 @@ func TestPlayerLevelingUp(t *testing.T) {
 }
 
 func TestPlayerSerialize(t *testing.T) {
-  p1 := NewPlayer("nooblet", 123)
+  p1 := newPlayerWithXP("nooblet", 123)
   result := p1.Serialize()
   if !(len(result) == 4 && result["name"] == "nooblet") {
     t.Error("result was incorrect:", result)
@@ -123,7 +132,7 @@ func TestPlayerSerialize(t *testing.T) {
 }
 
 func TestUnserializePlayer(t *testing.T) {
-  player := NewPlayer("nooblet", 123)
+  player := newPlayerWithXP("nooblet", 123)
   playerS := player.Serialize()
   playerU := Unserialize(playerS)
   if playerU.Name() != player.Name() || playerU.XP() != player.XP() || playerU.HP() != player.HP() {

@@ -38,7 +38,7 @@ func TestStoreEntity(t *testing.T) {
   }
   defer db.Close()
 
-  player := NewPlayer("foo", 0)
+  player := NewPlayer("foo")
   err = db.StoreEntity(player)
   if err != nil {
     t.Error(err)
@@ -66,7 +66,7 @@ func TestEntities(t *testing.T) {
   }
   defer db.Close()
 
-  player := NewPlayer("foo", 0)
+  player := NewPlayer("foo")
   err = db.StoreEntity(player)
   if err != nil {
     t.Error(err)
@@ -93,13 +93,13 @@ func TestEntitiesWithFilter(t *testing.T) {
   }
   defer db.Close()
 
-  player_1 := NewPlayer("foo", 0)
+  player_1 := NewPlayer("foo")
   err = db.StoreEntity(player_1)
   if err != nil {
     t.Error(err)
   }
 
-  player_2 := NewPlayer("bar", 123)
+  player_2 := NewPlayer("bar")
   err = db.StoreEntity(player_2)
   if err != nil {
     t.Error(err)

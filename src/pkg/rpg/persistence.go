@@ -8,8 +8,8 @@ import (
 type M map[string]interface{}
 
 type Database interface {
-  StorePlayer(*Player) os.Error
-  Players(...M) ([]*Player, os.Error)
+  StoreEntity(Entity) os.Error
+  Entities(...M) ([]Entity, os.Error)
   Close()
 }
 
@@ -26,29 +26,34 @@ func NewMongoConn(host string, databaseName string) (*MongoConn, os.Error) {
   return &MongoConn{session, session.DB(databaseName)}, nil
 }
 
-func (m *MongoConn) StorePlayer(player *Player) os.Error {
-  data := M{"name": player.Name(), "xp": player.XP(), "hp": player.HP()}
-  return m.db.C("players").Insert(data)
+func (m *MongoConn) StoreEntity(entity Entity) os.Error {
+  return m.db.C("entities").Insert(entity.Serialize())
 }
 
-func (m *MongoConn) Players(args ...M) ([]*Player, os.Error) {
-  var result *Player
+func (m *MongoConn) Entities(args ...M) ([]Entity, os.Error) {
   var err os.Error
   var count int
+  var params, result M
 
-  qry := m.db.C("players")
+  if len(args) == 0 {
+    params = M{}
+  } else {
+    params = args[0]
+  }
+
+  qry := m.db.C("entities").Find(params)
   count, err = qry.Count()   // FIXME: count is probably too expensive
   if err != nil {
     return nil, err
   }
 
-  players := make([]*Player, count)
+  entities := make([]Entity, count)
   i := 0
-  err = qry.Find(M{}).For(&result, func() os.Error {
-    players[i] = result
+  err = qry.For(&result, func() os.Error {
+    entities[i] = Unserialize(result)
     return nil
   })
-  return players, err
+  return entities, err
 }
 
 func (m *MongoConn) Close() {

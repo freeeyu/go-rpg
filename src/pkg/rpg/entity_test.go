@@ -52,7 +52,7 @@ func TestPlayerHP(t *testing.T) {
   }
 }
 
-func TestAttacking(t *testing.T) {
+func TestPlayerAttack(t *testing.T) {
   p1 := newPlayerFromLevel("nooblet", 1)
   p2 := newPlayerFromLevel("newbie", 2)
 
@@ -67,7 +67,7 @@ func TestAttacking(t *testing.T) {
   }
 }
 
-func TestDeath(t *testing.T) {
+func TestPlayerDeath(t *testing.T) {
   p1 := newPlayerFromLevel("nooblet", 1)
   p2 := newPlayerFromLevel("newbie", 2)
 
@@ -80,7 +80,7 @@ func TestDeath(t *testing.T) {
   }
 }
 
-func TestGainingXP(t *testing.T) {
+func TestPlayerXPGaining(t *testing.T) {
   p1 := newPlayerFromLevel("nooblet", 1)
   p2 := newPlayerFromLevel("newbie", 2)
 
@@ -97,7 +97,7 @@ func TestGainingXP(t *testing.T) {
   }
 }
 
-func TestLevelingUp(t *testing.T) {
+func TestPlayerLevelingUp(t *testing.T) {
   p1 := NewPlayer("nooblet", 8)
   p2 := newPlayerFromLevel("newbie", 2)
 
@@ -111,5 +111,22 @@ func TestLevelingUp(t *testing.T) {
 
   if p1.Level() != 2 {
     t.Error("p1 should now be level 2, but is level", p1.Level())
+  }
+}
+
+func TestPlayerSerialize(t *testing.T) {
+  p1 := NewPlayer("nooblet", 123)
+  result := p1.Serialize()
+  if !(len(result) == 4 && result["name"] == "nooblet") {
+    t.Error("result was incorrect:", result)
+  }
+}
+
+func TestUnserializePlayer(t *testing.T) {
+  player := NewPlayer("nooblet", 123)
+  playerS := player.Serialize()
+  playerU := Unserialize(playerS)
+  if playerU.Name() != player.Name() || playerU.XP() != player.XP() || playerU.HP() != player.HP() {
+    t.Error("unserialization failed:", playerU)
   }
 }

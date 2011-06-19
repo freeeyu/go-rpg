@@ -11,9 +11,37 @@ type Entity interface {
   HP() int
   Attack(target Entity)
   IsDead() bool
+  Serialize() M
 
   takeDamage(amount int)
   maxHP() int
+}
+
+func Unserialize(data M) Entity {
+  var result Entity
+  var kind string
+  var ok bool
+
+  if kind, ok = data["kind"].(string); ok {
+    switch kind {
+    case "player":
+      var name string
+      var xp, hp int
+
+      player := &Player{}
+      if name, ok = data["name"].(string); ok {
+        player.name = name
+      }
+      if xp, ok = data["xp"].(int); ok {
+        player.xp = xp
+      }
+      if hp, ok = data["hp"].(int); ok {
+        player.hp = hp
+      }
+      result = player
+    }
+  }
+  return result
 }
 
 type Player struct {
@@ -58,6 +86,10 @@ func (p *Player) Attack(target Entity) {
 
 func (p *Player) IsDead() bool {
   return p.hp <= 0
+}
+
+func (p *Player) Serialize() M {
+  return M{"name": p.name, "xp": p.xp, "hp": p.hp, "kind": "player"}
 }
 
 func (p *Player) takeDamage(amount int) {

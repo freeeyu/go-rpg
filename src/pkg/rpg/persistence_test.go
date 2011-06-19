@@ -19,7 +19,7 @@ func setup(t *testing.T) {
 }
 
 func teardown(t *testing.T) {
-  err = mdb.C("players").RemoveAll(M{})
+  err = mdb.C("entities").RemoveAll(M{})
   msession.Close()
 }
 
@@ -28,7 +28,7 @@ func die(t *testing.T, args ...interface{}) {
   t.Fatal(args)
 }
 
-func TestStorePlayer(t *testing.T) {
+func TestStoreEntity(t *testing.T) {
   var db *MongoConn
   setup(t)
 
@@ -39,27 +39,25 @@ func TestStorePlayer(t *testing.T) {
   defer db.Close()
 
   player := NewPlayer("foo", 0)
-  err = db.StorePlayer(player)
+  err = db.StoreEntity(player)
   if err != nil {
     t.Error(err)
   }
 
   var result M
-  err = mdb.C("players").Find(M{"name": "foo"}).One(&result)
+  err = mdb.C("entities").Find(M{"name": "foo"}).One(&result)
   if err != nil {
     t.Error(err)
-  }
-  t.Log(result)
-  if result["name"] != "foo" || result["xp"] != 0 || result["hp"] != 10 {
+  } else if result["name"] != "foo" || result["xp"] != 0 || result["hp"] != 10 {
     t.Error("player values were not correct")
   }
 
   teardown(t)
 }
 
-func TestPlayers(t *testing.T) {
+func TestEntities(t *testing.T) {
   var db *MongoConn
-  var players []*Player
+  var entities []Entity
   setup(t)
 
   db, err = NewMongoConn("localhost", "go-rpg-test")
@@ -69,16 +67,51 @@ func TestPlayers(t *testing.T) {
   defer db.Close()
 
   player := NewPlayer("foo", 0)
-  err = db.StorePlayer(player)
+  err = db.StoreEntity(player)
   if err != nil {
     t.Error(err)
   }
 
-  players, err = db.Players()
+  entities, err = db.Entities()
   if err != nil {
     t.Error(err)
-  } else if len(players) != 1 {
-    t.Error("expected 1 player, found", len(players))
+  } else if len(entities) != 1 {
+    t.Error("expected 1 entities, found", len(entities))
+  }
+
+  teardown(t)
+}
+
+func TestEntitiesWithFilter(t *testing.T) {
+  var db *MongoConn
+  var entities []Entity
+  setup(t)
+
+  db, err = NewMongoConn("localhost", "go-rpg-test")
+  if err != nil {
+    die(t, err.String())
+  }
+  defer db.Close()
+
+  player_1 := NewPlayer("foo", 0)
+  err = db.StoreEntity(player_1)
+  if err != nil {
+    t.Error(err)
+  }
+
+  player_2 := NewPlayer("bar", 123)
+  err = db.StoreEntity(player_2)
+  if err != nil {
+    t.Error(err)
+  }
+
+  entities, err = db.Entities(M{"name": "bar"})
+  if err != nil {
+    t.Error(err)
+  } else if len(entities) != 1 {
+    t.Error("expected 1 entity, found", len(entities))
+  } else if entities[0].Name() != "bar" {
+    t.Error("found wrong player:", entities[0])
   }
 
   teardown(t)

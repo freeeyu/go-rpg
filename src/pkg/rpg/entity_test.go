@@ -131,10 +131,10 @@ func TestPlayerSerialize(t *testing.T) {
   }
 }
 
-func TestUnserializePlayer(t *testing.T) {
+func TestUnserializeEntity(t *testing.T) {
   player := newPlayerWithXP("nooblet", 123)
   playerS := player.Serialize()
-  playerU := Unserialize(playerS)
+  playerU := UnserializeEntity(playerS)
   if playerU.Name() != player.Name() || playerU.XP() != player.XP() || playerU.HP() != player.HP() {
     t.Error("unserialization failed:", playerU)
   }

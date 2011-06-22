@@ -11,7 +11,7 @@ type Entity interface {
   HP() int
   Attack(target Entity)
   IsDead() bool
-  Serialize() M
+  Serialize() map[string]interface{}
 
   takeDamage(amount int)
   maxHP() int
@@ -23,7 +23,7 @@ type Player struct {
   hp int
 }
 
-func Unserialize(data M) Entity {
+func UnserializeEntity(data map[string]interface{}) Entity {
   var result Entity
   var kind string
   var ok bool
@@ -93,8 +93,8 @@ func (p *Player) IsDead() bool {
   return p.hp <= 0
 }
 
-func (p *Player) Serialize() M {
-  return M{"name": p.name, "xp": p.xp, "hp": p.hp, "kind": "player"}
+func (p *Player) Serialize() map[string]interface{} {
+  return map[string]interface{}{"name": p.name, "xp": p.xp, "hp": p.hp, "kind": "player"}
 }
 
 func (p *Player) takeDamage(amount int) {
